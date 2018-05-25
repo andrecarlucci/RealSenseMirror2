@@ -1,4 +1,6 @@
-﻿using App.Selfie;
+﻿using App.Actions;
+using App.MotionDetector;
+using App.Selfie;
 using App.Twitter;
 using Microsoft.Extensions.Configuration;
 using Serilog;
@@ -55,6 +57,11 @@ namespace App {
             SelfieStateMachine.CoolDownDelay = Int32.Parse(Config["Selfie:CoolDownDelay"]);
             SelfieStateMachine.PostToTwitter = Convert.ToBoolean(Config["Selfie:PostToTwitter"]);
             SelfieStateMachine.PathToSave = Config["Selfie:PathToSave"] ?? "";
+
+            MotionDetectorPublisher.MotionThreshold = Int32.Parse(Config["MotionDetector:MotionThreshold"]);
+            MotionDetectorPublisher.PixelThreshold = Int32.Parse(Config["MotionDetector:PixelThreshold"]);
+            TurnMonitorOnOffAction.TimeoutInMinutes = Int32.Parse(Config["TurnMonitorOnOff:TimeoutInMinutes"]);
+
 
             MirrorStateMachine.SELFIE = Config["Selfie:Trigger"];
             MirrorClient.Address = Config["SmartMirror:Address"];

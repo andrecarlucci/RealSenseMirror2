@@ -1,4 +1,5 @@
-﻿using App.MediatorMessages;
+﻿using App.Actions;
+using App.MediatorMessages;
 using App.MotionDetector;
 using App.OCR;
 using App.Selfie;
@@ -36,12 +37,12 @@ namespace App {
         private FaceRecognizer _faceRecognizer;
         private FacePipeline _facePipeline;
         private VideoCapture _capture;
-        private MotionDetectorService _motionDetectorService;
+        private MotionDetectorPublisher _motionDetectorService;
 
         private MirrorStateMachine _mirrorUserStateMachine;
         private FrameAggregator _frameAggregator;
 
-        private bool _streamEnabled;
+        private bool _streamEnabled = true;
         private int _forceFaces = -1;
 
         public MainWindow() {
@@ -53,7 +54,7 @@ namespace App {
             _faceRepository = new FaceRepository("Faces");
             _faceDetector = new FaceDetector("Assets\\haarcascade_frontalface_alt_tree.xml");
             _faceRecognizer = new FaceRecognizer();
-            _motionDetectorService = new MotionDetectorService();
+            _motionDetectorService = new MotionDetectorPublisher();
 
             _facePipeline = new FacePipeline(_faceDetector, _faceRecognizer, _faceRepository);
             _facePipeline.Prepare();
@@ -67,8 +68,9 @@ namespace App {
                 ChangeUI(() => Detected.Text = msg.Username);
             });
 
-            Mediator.Default.Subscribe<MotionDetection>
-
+            var turnMonitorOnOff = new TurnMonitorOnOffAction();
+            Task.Run(async () => await turnMonitorOnOff.Start());
+            Mediator.Default.Subscribe<MotionDetected>(turnMonitorOnOff, turnMonitorOnOff.Proccess);
             
             Task.Factory.StartNew(async () => {
                 try {
